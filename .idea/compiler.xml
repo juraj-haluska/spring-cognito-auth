@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="spring-cognito-auth" target="1.5" />
+      <module name="spring-cognito-auth" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
