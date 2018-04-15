@@ -29,10 +29,12 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-@ConfigurationProperties(prefix = "auth")
+@ConfigurationProperties("cognito")
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private String AUTH_HEADER_STRING = "Authorization";
+    private static final String AUTH_HEADER_STRING = "Authorization";
+    private static final String AUTH_BEARER_STRING = "Bearer";
+
     private String ISSUER = "https://cognito-idp.eu-central-1.amazonaws.com/eu-central-1_sFKzVGbR9";
     private String KEY_STORE_PATH = "/.well-known/jwks.json";
 
@@ -40,7 +42,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     RemoteJWKSet remoteJWKSet;
 
     public JwtAuthFilter() throws MalformedURLException {
-        this.remoteJWKSet = new RemoteJWKSet(new URL(ISSUER + KEY_STORE_PATH));
+        URL JWKUrl = new URL(ISSUER + KEY_STORE_PATH);
+        this.remoteJWKSet = new RemoteJWKSet(JWKUrl);
     }
 
     @Override
@@ -49,7 +52,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             HttpServletResponse res,
             FilterChain chain) throws IOException, ServletException {
 
-        String header = req.getHeader(AUTH_HEADER_STRING).replace("Bearer ","");
+        String header = req.getHeader(AUTH_HEADER_STRING).replace(AUTH_BEARER_STRING,"");
 
         logger.info(header);
 
@@ -59,7 +62,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String iss = jwt.getJWTClaimsSet().getIssuer();
             logger.info(iss);
 
-            // check if issues is our user pool
+            // check if issuer is our user pool
             if (ISSUER.equals(jwt.getJWTClaimsSet().getIssuer())) {
 
                 JWSKeySelector keySelector = new JWSVerificationKeySelector(JWSAlgorithm.RS256, remoteJWKSet);
